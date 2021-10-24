@@ -9,10 +9,7 @@ import (
 type Config struct {
 	Env           string
 	Debug         bool   `default:"true"`
-	Scheme        string `default:"http"`
-	ListenAddress string `default:":8080"`
-	PrivateKey    string `default:""`
-	Certificate   string `default:""`
+	Server        ServerConfig
 }
 
 func loadConfig() (Config, error) {

@@ -36,7 +36,7 @@ window.addEventListener("load", function(evt) {
             return false;
         }
         print("SEND: " + input.value);
-        ws.send(JSON.stringify({test: 'value'}));
+        ws.send(JSON.stringify({test: input.value}));
         return false;
     };
 
