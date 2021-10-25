@@ -70,6 +70,14 @@ func serveWs(w http.ResponseWriter, r *http.Request) {
 		err = c.Close()
 	}()
 
+	ms := Message{
+		"Openned",
+	}
+
+	ms_json, _ := json.Marshal(ms)
+
+	err = c.WriteMessage(websocket.TextMessage, []byte(ms_json))
+
 	if err != nil {
 		handleErr(w, err, http.StatusInternalServerError)
 	}
