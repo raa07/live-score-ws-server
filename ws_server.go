@@ -74,6 +74,7 @@ func serveWs(w http.ResponseWriter, r *http.Request) {
 		"Openned",
 	}
 
+
 	ms_json, _ := json.Marshal(ms)
 
 	err = c.WriteMessage(websocket.TextMessage, []byte(ms_json))
