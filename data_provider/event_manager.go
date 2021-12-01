@@ -4,26 +4,26 @@ import "sync"
 
 type EventManager struct {
 	mx sync.Mutex
-	subsMatches map[int][] chan Match
-	matches *Matches
+	subsMatches map[int][] chan SerieData
+	matches *MatchesStorage
 }
 
-func NewEventManager(matches *Matches) *EventManager {
+func NewEventManager(matches *MatchesStorage) *EventManager {
 	e := &EventManager{
 		matches: matches,
 	}
-	e.subsMatches = make(map[int][]chan Match)
+	e.subsMatches = make(map[int][]chan SerieData)
 
 	return e
 }
 
-func (e *EventManager) SubscribeMatch(idMatch int, ch chan Match) {
+func (e *EventManager) SubscribeMatch(idMatch int, ch chan SerieData) {
 	e.mx.Lock()
 	defer e.mx.Unlock()
 	e.subsMatches[idMatch] = append(e.subsMatches[idMatch], ch)
 }
 
-func (e *EventManager) PublishMatch(idMatch int, match Match) {
+func (e *EventManager) PublishMatch(idMatch int, match SerieData) {
 	e.mx.Lock()
 	defer e.mx.Unlock()
 	e.matches.Store(idMatch, match)

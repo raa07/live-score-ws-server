@@ -10,6 +10,21 @@ func NewProvider () *Provider {
 }
 
 func (p *Provider) listenMatches() {
-	///event manager publish match
+	//subscriber := redisClient.Subscribe(ctx, "send-user-data")
+	//
+	//user := User{}
+	//
+	//for {
+	//	msg, err := subscriber.ReceiveMessage(ctx)
+	//	if err != nil {
+	//		panic(err)
+	//	}
+	//
+	//	if err := json.Unmarshal([]byte(msg.Payload), &user); err != nil {
+	//		panic(err)
+	//	}
+	//
+	//	// ...
+	//}
 }
 
