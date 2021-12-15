@@ -34,9 +34,20 @@ type Message struct {
 	Test string `json:"test"`
 }
 
-func NewWSServer(config ServerConfig) error {
+type SerieSubscriptionRequest struct {
+	Id int `json:"id"`
+}
 
-	router := newRouter()
+type WsServer struct {
+	EventManager *EventManager
+}
+
+func NewWSServer(config ServerConfig, manager *EventManager) error {
+	ws := WsServer{
+		manager,
+	}
+
+	router := newRouter(ws)
 	n := negroni.Classic()
 
 	n.UseHandler(router)
@@ -60,7 +71,7 @@ func handleErr(w http.ResponseWriter, err error, status int) {
 	http.Error(w, string(msg), status)
 }
 
-func serveWs(w http.ResponseWriter, r *http.Request) {
+func (ws WsServer) serveWs(w http.ResponseWriter, r *http.Request) {
 	c, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		handleErr(w, err, http.StatusInternalServerError)
@@ -74,7 +85,6 @@ func serveWs(w http.ResponseWriter, r *http.Request) {
 		"Openned",
 	}
 
-
 	ms_json, _ := json.Marshal(ms)
 
 	err = c.WriteMessage(websocket.TextMessage, []byte(ms_json))
@@ -82,6 +92,7 @@ func serveWs(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		handleErr(w, err, http.StatusInternalServerError)
 	}
+
 	for {
 		mt, msg, err := c.ReadMessage()
 		if err != nil {
@@ -92,27 +103,44 @@ func serveWs(w http.ResponseWriter, r *http.Request) {
 			handleErr(w, errors.New("only text message are supported;"), http.StatusNotImplemented)
 			break
 		}
-		var v Message
-		err = json.Unmarshal(msg, &v)
+		var ssr SerieSubscriptionRequest
+		err = json.Unmarshal(msg, &ssr)
 		if err != nil {
 			handleErr(w, err, http.StatusInternalServerError)
 			break
 		}
 
-		fmt.Println(v.Test)
+		fmt.Println(ssr.Id)
 
-		err = c.WriteMessage(mt, []byte(msg))
-		if err != nil {
-			handleErr(w, err, http.StatusInternalServerError)
-			break
-		}
-
-
+		go ws.subscribeForSerie(c, ssr.Id)
 	}
 }
 
+func (ws WsServer) subscribeForSerie(c *websocket.Conn, serieId int) error {
+	ch := make(chan SerieData)
+	ws.EventManager.SubscribeSerie(serieId, ch)
+	for {
+		serie, ok := <-ch
+		if ok == false {
+			break
+		}
+		msg, err := json.Marshal(serie)
+		if err != nil {
+			return err
+		}
+		fmt.Println("Received ", serie, ok)
+
+		err = c.WriteMessage(1, []byte(msg))
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 // NewRouter is the constructor for all my routes
-func newRouter() *mux.Router {
+func newRouter(ws WsServer) *mux.Router {
 
 	router := mux.NewRouter().StrictSlash(true)
 
@@ -120,7 +148,7 @@ func newRouter() *mux.Router {
 		Methods("GET").
 		Path("/ws").
 		Name("Communication Channel").
-		HandlerFunc(serveWs)
+		HandlerFunc(ws.serveWs)
 
 	router.
 		Methods("GET").

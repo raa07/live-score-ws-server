@@ -14,7 +14,7 @@ window.addEventListener("load", function(evt) {
         if (ws) {
             return false;
         }
-        ws = new WebSocket('ws://localhost/ws');
+        ws = new WebSocket('ws://localhost:8001/ws');
         ws.onopen = function(evt) {
             print("OPEN");
         }
@@ -36,7 +36,7 @@ window.addEventListener("load", function(evt) {
             return false;
         }
         print("SEND: " + input.value);
-        ws.send(JSON.stringify({test: input.value}));
+        ws.send(JSON.stringify({id: 1}));
         return false;
     };
 

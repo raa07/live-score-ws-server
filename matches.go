@@ -1,28 +1,28 @@
-package data_provider
+package main
 
 import "sync"
 
-type MatchesStorage struct {
+type SeriesStorage struct {
 	mx         sync.RWMutex
 	serieDatas map[int]SerieData
 }
 
 type SerieData struct {
-	SelectedMatch int `json:"selected_match"`
-	DireWins      int `json:"dire_wins"`
-	RadiantWins   int `json:"radiant_wins"`
-	Serie         Serie `json:"serie"`
-	Matches       map[int]Match `json:"matches"`
+	SelectedMatch int           `json:"selected_match,omitempty"`
+	DireWins      int           `json:"dire_wins,omitempty"`
+	RadiantWins   int           `json:"radiant_wins,omitempty"`
+	Serie         Serie         `json:"serie"`
+	Matches       map[int]Match `json:"series,omitempty"`
 }
 
 type Match struct {
-	IdMatch        int         `json:"id_match"`
-	Buildings      Buildings   `json:"buildings"`
-	Result         Result      `json:"result"`
-	PlayersDire    []TeamPlayer    `json:"playersDire"`
-	PlayersRadiant []TeamPlayer    `json:"playersRadiant"`
-	RadiantBans    []SingleBan `json:"radiantBans"`
-	DireBans       []SingleBan `json:"direBans"`
+	IdMatch        int          `json:"id_match"`
+	Buildings      Buildings    `json:"buildings"`
+	Result         Result       `json:"result"`
+	PlayersDire    []TeamPlayer `json:"playersDire"`
+	PlayersRadiant []TeamPlayer `json:"playersRadiant"`
+	RadiantBans    []SingleBan  `json:"radiantBans"`
+	DireBans       []SingleBan  `json:"direBans"`
 }
 
 type TeamPlayer struct {
@@ -90,24 +90,24 @@ type Result struct {
 	GameTime     string `json:"game_time"`
 }
 
-func NewMatches(serieDatas map[int]SerieData) (*MatchesStorage, error) {
-	m := &MatchesStorage{
-		serieDatas: serieDatas,
+func NewSeriesStorage(serieDataMap map[int]SerieData) (*SeriesStorage, error) {
+	m := &SeriesStorage{
+		serieDatas: serieDataMap,
 	}
 
 	return m, nil
 }
 
-func (m *MatchesStorage) Load(idMatch int) (SerieData, bool) {
+func (m *SeriesStorage) Load(idSerie int) (SerieData, bool) {
 	m.mx.RLock()
 	defer m.mx.RUnlock()
-	val, ok := m.serieDatas[idMatch]
+	val, ok := m.serieDatas[idSerie]
 
 	return val, ok
 }
 
-func (m *MatchesStorage) Store(idMatch int, serieData SerieData) {
+func (m *SeriesStorage) Store(idSerie int, serieData SerieData) {
 	m.mx.Lock()
 	defer m.mx.Unlock()
-	m.serieDatas[idMatch] = serieData
+	m.serieDatas[idSerie] = serieData
 }
